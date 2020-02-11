@@ -10,7 +10,8 @@ const fireStore = admin.firestore();
 
 export const updateProlongedTodos = functions.region('asia-northeast1').pubsub.topic('prolonged-todo').onPublish(event => {
     const batch = fireStore.batch();
-    const today = dayjs(new Date()).format('YYYY/MM/DD');
+    const offsetMin = 540;
+    const today = dayjs().add(offsetMin, 'minute').format('YYYY/MM/DD');
     const collectionRef = fireStore.collection('todos');
     collectionRef
         .where('isDone', '==', false)
@@ -29,7 +30,7 @@ export const updateProlongedTodos = functions.region('asia-northeast1').pubsub.t
             });
 
             batch.commit().then(() => {
-                console.log('successfully updated!');
+                console.log(`successfully updated!: ${today}`);
             }).catch(err => {
                 console.log(err);
             })
