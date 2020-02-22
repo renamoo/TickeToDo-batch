@@ -1,11 +1,15 @@
 import * as dayjs from 'dayjs';
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+var serviceAccount = require('../config/serviceAccountKey.json');
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
+// Start writing Firebase Functions
+// https://firebase.google.com/docs/functions/typescript
 //
-admin.initializeApp();
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: 'https://ticketodo-c7e07.firebaseio.com'
+});
 const fireStore = admin.firestore();
 
 export const updateProlongedTodos = functions.region('asia-northeast1').pubsub.topic('prolonged-todo').onPublish(event => {
@@ -17,7 +21,7 @@ export const updateProlongedTodos = functions.region('asia-northeast1').pubsub.t
         .where('isDone', '==', false)
         .where('date', '<', new Date(today))
         .get()
-        .then(snapshot => {
+        .then((snapshot: FirebaseFirestore.QuerySnapshot) => {
             snapshot.docs.forEach(doc => {
                 const ref = collectionRef.doc(doc.id);
                 const prolongedDays = (doc.data().prolongedDays || 0) + 1;
@@ -31,11 +35,11 @@ export const updateProlongedTodos = functions.region('asia-northeast1').pubsub.t
 
             batch.commit().then(() => {
                 console.log(`successfully updated!: ${today}`);
-            }).catch(err => {
+            }).catch((err: any) => {
                 console.log(err);
             })
         })
-        .catch(err => {
+        .catch((err: any) => {
             console.log(err);
         });
     // To remove errors in log
